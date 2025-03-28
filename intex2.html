@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD Vật Lý Gọn Gàng</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: "default" });
+    </script>
+    <style>
+        .mermaid {
+            max-width: 100%;
+            overflow-x: auto;
+            transform: scale(0.85); /* Thu nhỏ để vừa màn hình */
+            transform-origin: top left;
+        }
+    </style>
+</head>
+<body>
+    <h2>ERD Vật Lý - Gọn Gàng</h2>
+    <div class="mermaid">
+        erDiagram
+        %% Nhóm danh mục sản phẩm
+        DanhMucCap1 ||--o{ DanhMucCap2 : "Gồm"
+        DanhMucCap2 ||--o{ DanhMucCap3 : "Gồm"
+        DanhMucCap3 ||--o{ SanPham : "Chứa"
+        ThuongHieu ||--o{ SanPham : "Sở hữu"
+        BoSuuTap ||--o{ SanPham : "Chứa"
+
+        %% Nhóm khách hàng và giao dịch
+        KhachHang ||--o{ HoaDon : "Mua"
+        KhachHang ||--o| TaiKhoan : "Có"
+        HoaDon ||--o{ ChiTietHoaDon : "Gồm"
+        NhanVien ||--o{ HoaDon : "Quản lý"
+        DoiTacGiaoHang ||--o{ HoaDon : "Vận chuyển"
+
+        %% Nhóm tài khoản và tương tác
+        TaiKhoan ||--o| GioHang : "Sở hữu"
+        GioHang ||--o{ SanPham : "Chứa"
+        TaiKhoan ||--o| DanhSachYeuThich : "Sở hữu"
+        DanhSachYeuThich ||--o{ SanPham : "Gồm"
+        SanPham ||--o{ DanhGia : "Nhận đánh giá"
+        TaiKhoan ||--o{ DanhGia : "Viết đánh giá"
+        SanPham ||--o{ BinhLuan : "Nhận bình luận"
+        TaiKhoan ||--o{ BinhLuan : "Viết bình luận"
+
+        %% Nhóm quản lý kho và khuyến mãi
+        KhuyenMai ||--o{ SanPham : "Áp dụng"
+        QuanLyKho ||--o{ SanPham : "Lưu trữ"
+
+        %% Định nghĩa bảng và khóa
+        DanhMucCap1 {
+            int MaDMC1 PK
+            varchar(255) TenDMC1 NOT NULL
+        }
+        DanhMucCap2 {
+            int MaDMC2 PK
+            varchar(255) TenDMC2 NOT NULL
+            int MaDMC1 FK
+        }
+        DanhMucCap3 {
+            int MaDMC3 PK
+            varchar(255) TenDMC3 NOT NULL
+            int MaDMC2 FK
+        }
+        SanPham {
+            int MaSP PK
+            varchar(255) TenSP NOT NULL
+            text MoTa
+            decimal(10,2) GiaNiemYet
+            decimal(10,2) GiaKhuyenMai NULL
+            varchar(50) MauSac
+            varchar(50) KichThuoc
+            varchar(100) ChatLieu
+            int SoLuongTonKho
+            varchar(255) HinhAnhSP
+            enum('Còn hàng','Hết hàng') TrangThai
+            int ThuongHieuSP FK
+        }
+        ThuongHieu {
+            int MaTH PK
+            varchar(255) TenTH NOT NULL
+        }
+        BoSuuTap {
+            int MaBST PK
+            varchar(255) TenBST NOT NULL
+        }
+        KhachHang {
+            int MaKH PK
+            varchar(255) HoTen NOT NULL
+            varchar(15) SDT UNIQUE
+            varchar(255) Email UNIQUE
+            date NgaySinh
+            text DiaChiGiaoHang
+        }
+        TaiKhoan {
+            varchar(255) Email PK
+            varchar(255) MatKhau NOT NULL
+            int MaKH FK UNIQUE
+        }
+        HoaDon {
+            int MaHD PK
+            int MaKH FK
+            date NgayLap
+            decimal(10,2) TongTien
+            enum('COD', 'Chuyển khoản', 'Ví điện tử') PhuongThucTT
+            enum('Chờ xác nhận', 'Đang giao', 'Đã nhận hàng', 'Đã hủy') TrangThai
+            text DiaChiGiaoHang
+        }
+        ChiTietHoaDon {
+            int MaHD FK
+            int MaSP FK
+            int SoLuong
+            decimal(10,2) GiaBan
+        }
+        NhanVien {
+            int MaNV PK
+            varchar(255) HoTen NOT NULL
+            varchar(15) SDT UNIQUE
+            enum('Nhân viên bán hàng', 'Nhân viên kho', 'Admin') QuyenTruyCap
+        }
+        GioHang {
+            int MaGioHang PK
+            varchar(255) TaiKhoanEmail FK UNIQUE
+        }
+        DanhSachYeuThich {
+            int MaSP FK
+            varchar(255) Email FK
+        }
+        DanhGia {
+            int MaDanhGia PK
+            int MaSP FK
+            varchar(255) Email FK
+            int SoSao CHECK(SoSao BETWEEN 1 AND 5)
+            text NoiDung
+            date NgayDG
+        }
+        BinhLuan {
+            int MaBinhLuan PK
+            int MaSP FK
+            varchar(255) Email FK
+            text NoiDung
+            date NgayBL
+        }
+        KhuyenMai {
+            int MaKM PK
+            varchar(255) TenKM NOT NULL
+            date ThoiGianBD
+            date ThoiGianKT
+            decimal(5,2) PhanTramGiamGia
+        }
+        QuanLyKho {
+            int MaKho PK
+            varchar(255) TenKho NOT NULL
+            text DiaChiKho
+        }
+        DoiTacGiaoHang {
+            int MaDVVC PK
+            varchar(255) TenDVVC NOT NULL
+            int ThoiGianGiaoHang
+            decimal(10,2) ChiPhiVanChuyen
+        }
+    </div>
+</body>
+</html>
